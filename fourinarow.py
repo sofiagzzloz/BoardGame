@@ -286,6 +286,7 @@ def show_winner_popup(winner):
     pygame.display.update()
     sleep(2)  # Pause for 2 seconds
 
+
 def start_game():
     """Start the Connect 4 game."""
     global player_scores, leaderboard, score_record
@@ -338,6 +339,8 @@ def start_game():
                         grid[row][col] = current_player
                         moves_stack.append((row, col, current_player))  # Push move onto the stack
                         move_count += 1  # Increment move count
+                        draw_grid(grid)  # Update the grid display
+                        pygame.time.wait(500)
 
                         if check_win(grid, current_player):
                             player_scores[current_player - 1] += 1
@@ -362,13 +365,15 @@ def start_game():
                 grid[row][col] = 2
                 moves_stack.append((row, col, 2))  # Push bot's move onto the stack
                 move_count += 1  # Increment move count
-
-                if check_win(grid, 2):
+                draw_grid(grid)  # Update the grid display
+                pygame.time.wait(500)
+                winning_positions = check_win(grid, current_player)
+                if winning_positions:
                     player_scores[1] += 1
-                    draw_grid(grid)
-                    show_winner_popup(2)  # Show bot win announcement
+                    blink_winning_tokens(grid, winning_positions, current_player)
+                    show_winner_popup(current_player)
+                    leaderboard.append((f"Player {current_player}", move_count))
                     # Add game result to the leaderboard
-                    leaderboard.append(("Bot", move_count))
                     game_over = True
                 elif check_tie(grid):
                     draw_grid(grid)
@@ -391,30 +396,42 @@ def start_game():
                 pygame.quit()
                 sys.exit()
 
+def blink_winning_tokens(grid, winning_positions, piece):
+    """Blink the winning tokens to indicate the victory."""
+    for _ in range(5):  # Blink 5 times
+        draw_grid(grid, blink_positions=winning_positions)  # Highlight tokens
+        pygame.time.wait(300)  # Pause for 300ms
+        draw_grid(grid)  # Draw grid without highlights
+        pygame.time.wait(300)  # Pause for 300ms
 
 def check_win(grid, piece):
-    """Check if the given piece has won."""
+    """Check if the given piece has won and return the winning positions."""
+    # Check horizontal locations
     for r in range(ROW_COUNT):
         for c in range(COLUMN_COUNT - 3):
             if all(grid[r][c + i] == piece for i in range(4)):
-                return True
+                return [(r, c + i) for i in range(4)]
 
+    # Check vertical locations
     for r in range(ROW_COUNT - 3):
         for c in range(COLUMN_COUNT):
             if all(grid[r + i][c] == piece for i in range(4)):
-                return True
+                return [(r + i, c) for i in range(4)]
 
+    # Check positively sloped diagonals
     for r in range(ROW_COUNT - 3):
         for c in range(COLUMN_COUNT - 3):
             if all(grid[r + i][c + i] == piece for i in range(4)):
-                return True
+                return [(r + i, c + i) for i in range(4)]
 
+    # Check negatively sloped diagonals
     for r in range(3, ROW_COUNT):
         for c in range(COLUMN_COUNT - 3):
             if all(grid[r - i][c + i] == piece for i in range(4)):
-                return True
+                return [(r - i, c + i) for i in range(4)]
 
-    return False
+    return None
+
 
 
 def check_tie(grid):

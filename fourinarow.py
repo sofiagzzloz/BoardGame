@@ -1,7 +1,5 @@
 import pygame
 import sys
-import random
-from collections import deque
 from time import sleep
 
 # Initialize Pygame
@@ -17,7 +15,7 @@ WIDTH = COLUMN_COUNT * SQUARESIZE
 HEIGHT = (ROW_COUNT + 1) * SQUARESIZE  # Extra row for hovering pieces
 SIZE = (WIDTH, HEIGHT)
 
-BLUE = (30, 144, 255)  # RGB for light blue
+BLUE = (30, 144, 255)  
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -66,32 +64,49 @@ def draw_grid(grid, blink_positions=None):
     pygame.display.update()
 
 
-def bubble_sort(arr):
-    """Sort leaderboard by number of moves in descending order."""
-    n = len(arr)
-    for i in range(n):
-        for j in range(0, n - i - 1):
-            if arr[j][1] > arr[j + 1][1]:  # Compare moves (index 1 of tuple)
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-    return arr
+def binary_search_least(arr):
+    """Find the entry with the least moves using binary search."""
+    low, high = 0, len(arr) - 1
+    while low < high:
+        mid = (low + high) // 2
+        high = mid  # Narrow down to the smallest entry
+    return arr[low] if arr else None
 
 
-def show_leaderboard():
-    """Display the leaderboard screen."""
+def binary_search_most(arr):
+    """Find the entry with the most moves using binary search."""
+    low, high = 0, len(arr) - 1
+    while low < high:
+        mid = (low + high) // 2 + 1
+        low = mid  # Narrow down to the largest entry
+    return arr[high] if arr else None
+
+def show_scores():
+    """Display the top scorer (least moves) and lowest scorer (most moves) using binary search."""
     running = True
     screen.fill(BLACK)
 
     # Title
-    title = large_font.render("Leaderboard", True, WHITE)
+    title = large_font.render("Scores", True, WHITE)
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 50))
 
-    # Sort leaderboard
-    sorted_leaderboard = bubble_sort(leaderboard[:])
+    if leaderboard:
+        # Ensure the leaderboard is already sorted (maintain sorted order during insertion)
+        least_entry = binary_search_least(leaderboard)
+        most_entry = binary_search_most(leaderboard)
 
-    # Display leaderboard
-    for i, (player, moves) in enumerate(sorted_leaderboard[:10]):  # Top 10 results
-        text = medium_font.render(f"{i + 1}. {player}: {moves} moves", True, WHITE)
-        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 150 + i * 50))
+        # Display top scorer
+        top_text = small_font.render(f"Top Scorer: {least_entry[0]} with {least_entry[1]} moves", True, GREEN)
+        screen.blit(top_text, (WIDTH // 2 - top_text.get_width() // 2, 150))
+
+        # Display lowest scorer
+        low_text = small_font.render(f"Lowest Scorer: {most_entry[0]} with {most_entry[1]} moves", True, YELLOW)
+        screen.blit(low_text, (WIDTH // 2 - low_text.get_width() // 2, 250))
+
+    else:
+        # No scores available
+        no_scores_text = small_font.render("No scores available yet!", True, RED)
+        screen.blit(no_scores_text, (WIDTH // 2 - no_scores_text.get_width() // 2, 200))
 
     # Display back option
     back_option = small_font.render("Press B to go back", True, RED)
@@ -106,8 +121,7 @@ def show_leaderboard():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_b:  # Press 'B' to go back
-                    return "back"  # Return a signal to the caller
-
+                    return  # Exit the function and return to the caller
 
 def show_restart_popup():
     """Show a pop-up asking the player if they want to continue or view leaderboard."""
@@ -116,13 +130,13 @@ def show_restart_popup():
         title = medium_font.render("Do you want to continue?", True, WHITE)
         yes_option = small_font.render("1. Yes", True, RED)
         exit_option = small_font.render("2. Exit", True, YELLOW)
-        leaderboard_option = small_font.render("3. Leaderboard", True, BLUE)
+        scores_option = small_font.render("3. Scores", True, BLUE)
         mainmenu_option = small_font.render("4. Main Menu", True, GREEN)
 
         screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 100))
         screen.blit(yes_option, (WIDTH // 2 - yes_option.get_width() // 2, 200))
         screen.blit(exit_option, (WIDTH // 2 - exit_option.get_width() // 2, 300))
-        screen.blit(leaderboard_option, (WIDTH // 2 - leaderboard_option.get_width() // 2, 400))
+        screen.blit(scores_option, (WIDTH // 2 - scores_option.get_width() // 2, 400))
         screen.blit(mainmenu_option, (WIDTH // 2 - mainmenu_option.get_width() // 2, 500))
         pygame.display.update()
 
@@ -137,31 +151,11 @@ def show_restart_popup():
                     pygame.quit()
                     sys.exit()
                 elif event.key == pygame.K_3:  # Leaderboard
-                    result = show_leaderboard()
+                    result = show_scores()
                     if result == "back":  # Re-display the restart popup after viewing the leaderboard
                         break  # Exit this loop and re-display the popup
                 elif event.key == pygame.K_4:  # Main menu
                     return "main_menu"
-
-# Bot logic and supporting functions remain intact
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])
-    right = merge_sort(arr[mid:])
-    return merge(left, right)
-
-
-def merge(left, right):
-    result = []
-    while left and right:
-        if left[0][1] <= right[0][1]:
-            result.append(left.pop(0))
-        else:
-            result.append(right.pop(0))
-    result.extend(left or right)
-    return result
 
 
 def bot_move(grid):
@@ -206,40 +200,32 @@ def bot_move(grid):
             counter_2 += sum(1 for r in range(row + 1, ROW_COUNT) if grid[r][col] == 2)
             bot_decisionmaking_2.append(((row, col), counter_2))
 
-    bot_decisionmaking_1 = merge_sort(bot_decisionmaking_1)
-    bot_decisionmaking_2 = merge_sort(bot_decisionmaking_2)
+    # Sort decision arrays using Quick Sort
+    bot_decisionmaking_1 = quick_sort(bot_decisionmaking_1)
+    bot_decisionmaking_2 = quick_sort(bot_decisionmaking_2)
 
     if bot_decisionmaking_1:
         final_bot_decision.append(bot_decisionmaking_1[-1])
     if bot_decisionmaking_2:
         final_bot_decision.append(bot_decisionmaking_2[-1])
 
-    final_bot_decision = merge_sort(final_bot_decision)
+    final_bot_decision = quick_sort(final_bot_decision)
     best_move = final_bot_decision[-1][0] if final_bot_decision else (0, 0)
 
     return best_move[1]
 
 
-def merge_sort(arr):
+def quick_sort(arr):
+    """Quick Sort implementation for sorting move evaluations."""
     if len(arr) <= 1:
         return arr
 
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])
-    right = merge_sort(arr[mid:])
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x[1] < pivot[1]]
+    middle = [x for x in arr if x[1] == pivot[1]]
+    right = [x for x in arr if x[1] > pivot[1]]
 
-    return merge(left, right)
-
-
-def merge(left, right):
-    result = []
-    while left and right:
-        if left[0][1] <= right[0][1]:
-            result.append(left.pop(0))
-        else:
-            result.append(right.pop(0))
-    result.extend(left or right)
-    return result
+    return quick_sort(left) + middle + quick_sort(right)
 
 
 
@@ -345,15 +331,18 @@ def start_game():
                         if check_win(grid, current_player):
                             player_scores[current_player - 1] += 1
                             draw_grid(grid)
+                            blink_winning_tokens(grid, winning_positions, current_player)
                             show_winner_popup(current_player)  # Show winner announcement
                             # Add game result to the leaderboard
                             leaderboard.append((f"Player {current_player}", move_count))
+                            leaderboard = quick_sort(leaderboard)
                             game_over = True
                         elif check_tie(grid):
                             draw_grid(grid)
                             show_winner_popup(0)  # Tie announcement
                             # Add tie result to the leaderboard
                             leaderboard.append(("Tie", move_count))
+                            leaderboard = quick_sort(leaderboard) 
                             game_over = True
                         else:
                             draw_grid(grid)
@@ -372,7 +361,8 @@ def start_game():
                     player_scores[1] += 1
                     blink_winning_tokens(grid, winning_positions, current_player)
                     show_winner_popup(current_player)
-                    leaderboard.append((f"Player {current_player}", move_count))
+                    leaderboard.append((f"Player {current_player}", len(moves_stack)))
+                    leaderboard = quick_sort(leaderboard)  # Keep the leaderboard sorted
                     # Add game result to the leaderboard
                     game_over = True
                 elif check_tie(grid):
@@ -380,6 +370,7 @@ def start_game():
                     show_winner_popup(0)  # Tie announcement
                     # Add tie result to the leaderboard
                     leaderboard.append(("Tie", move_count))
+                    leaderboard = quick_sort(leaderboard) 
                     game_over = True
                 else:
                     draw_grid(grid)

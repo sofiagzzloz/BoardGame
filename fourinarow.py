@@ -328,10 +328,11 @@ def start_game():
                         draw_grid(grid)  # Update the grid display
                         pygame.time.wait(500)
 
-                        if check_win(grid, current_player):
+                        winning_positions = check_win(grid, current_player)  # Assign winning positions
+                        if winning_positions:
                             player_scores[current_player - 1] += 1
                             draw_grid(grid)
-                            blink_winning_tokens(grid, winning_positions, current_player)
+                            blink_winning_tokens(grid, winning_positions, current_player)  # Blink tokens
                             show_winner_popup(current_player)  # Show winner announcement
                             # Add game result to the leaderboard
                             leaderboard.append((f"Player {current_player}", move_count))
@@ -356,14 +357,13 @@ def start_game():
                 move_count += 1  # Increment move count
                 draw_grid(grid)  # Update the grid display
                 pygame.time.wait(500)
-                winning_positions = check_win(grid, current_player)
+                winning_positions = check_win(grid, current_player)  # Assign winning positions
                 if winning_positions:
                     player_scores[1] += 1
-                    blink_winning_tokens(grid, winning_positions, current_player)
+                    blink_winning_tokens(grid, winning_positions, current_player)  # Blink tokens
                     show_winner_popup(current_player)
-                    leaderboard.append((f"Player {current_player}", len(moves_stack)))
-                    leaderboard = quick_sort(leaderboard)  # Keep the leaderboard sorted
-                    # Add game result to the leaderboard
+                    leaderboard.append((f"Player {current_player}", move_count))
+                    leaderboard = quick_sort(leaderboard)
                     game_over = True
                 elif check_tie(grid):
                     draw_grid(grid)

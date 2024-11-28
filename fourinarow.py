@@ -24,7 +24,7 @@ GREEN = (0,128,0)
 
 # Setting up the screen 
 screen = pygame.display.set_mode(SIZE)
-pygame.display.set_caption("Connect 4 with Leaderboard, Smarter Bot, and Undo")
+pygame.display.set_caption("Connect 4")
 
 # Choosing our fonts
 small_font = pygame.font.SysFont("monospace", 30)
@@ -61,12 +61,6 @@ def draw_grid(grid, blink_positions=None):
     screen.blit(score_text, (20, 10))
 
     pygame.display.update()
-
-# complexity
-# Best case =(1)
-# Worst/ Avergae case = O(log n)
-
-
 
 def binary_search_least(arr): 
     #finding round with least moves
@@ -161,10 +155,6 @@ def show_restart_popup():
 
 
 def bot_move(grid):
-    # Complexity:
-    # Best case: O(row count: 6)
-    #Worst/Average: O(6 x 7 -> column count times row count)
- 
     # Priority 1: Check for bot's winning move
     for col in range(COLUMN_COUNT):
         if grid[ROW_COUNT - 1][col] == 0:
@@ -219,9 +209,7 @@ def bot_move(grid):
 
     return best_move[1]
 
-# Complexity: 
-# Best/ Average :O(N * LOG(N))
-# Worse case: O(n^2)
+
 def quick_sort(arr): 
     if len(arr) <= 1:
         return arr
@@ -432,7 +420,7 @@ def check_win(grid, piece):
 
 
 def check_tie(grid):
-    """Check if the game is a tie."""
+    # Check if the game is a tie
     return all(grid[ROW_COUNT - 1][col] != 0 for col in range(COLUMN_COUNT))
 
 

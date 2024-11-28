@@ -13,7 +13,7 @@ def binary_search_least(arr):
     Time Complexity:
         Best Case: O(1) - A singular game has been played.
         Average Case: O(log n) - Halves the array repeatedly for a typical sorted array binary search.
-        Worst Case: O(log n) - Halves the array repeatedly, and the element is in the first or last position.
+        Worst Case: O(log n) - Halves the array repeatedly
     """
 
 
@@ -23,7 +23,7 @@ def binary_search_most(arr):
     Time Complexity:
         Best Case: O(1) - A singular game has been played.
         Average Case: O(log n) - Halves the array repeatedly for a typical sorted array binary search.
-        Worst Case: O(log n) - Halves the array repeatedly, and the element is in the first or last position.
+        Worst Case: O(log n) - Halves the array repeatedly
     """
 
 def show_scores():

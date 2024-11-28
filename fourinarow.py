@@ -162,7 +162,7 @@ def show_restart_popup():
                     return "main_menu"
 
 
-def bot_move(grid): #This is the whole bot logic
+def bot_move(grid): #This is the whole bot logic navigating the best move for the bot using Multidimensional arrays
     # MOST IMPORTANTLY: Check if bot has a winning move
     for col in range(COLUMN_COUNT):
         if grid[ROW_COUNT - 1][col] == 0:
